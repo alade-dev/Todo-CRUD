@@ -1,20 +1,23 @@
-//connect express and mongoose
-const express = require("express");
-const connect = require("./config/database");
-
-//Import functions
-const { json } = require("express");
-const todo = require("./controllers/todoController");
-const models = require("./models/Todo");
-const routes = require("./routes/todoRoute");
-
-//Initialize express and mongoose
-connect();
+const express = require('express');
+const { json } = require('express');
+const flights = require('./controllers/todoController');
+const models = require('./models/Todo');
+const routes = require('./routes/todoRoute');
+const monogoose = require('mongoose');
 const app = express();
+const { config } = require('dotenv');
+
+config();
+
+monogoose.connect(
+  process.env.MONGO_URL,
+  { useNewUrlParser: true, useUnifiedTopology: true },
+  () => console.log('db connected')
+);
 
 app.use(json());
 
-app.use("/", routes);
+app.use('/', routes);
 
 const port = process.env.PORT || 3000;
 

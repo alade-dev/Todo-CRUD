@@ -1,52 +1,57 @@
-const { Todos } = require("../models/Todo");
-const { v4: uuid } = require("uuid");
+const TodoSchema = require('../models/Todo');
 
-exports.getFlights = (req, res) => {
-  console.log(`Flight in the database: ${Flights}`);
-
-  res.send(Flights);
+// get all todo
+const getAllTodo = (req, res) => {
+  TodoSchema.find().then((data) => {
+    res.status(200).send(data);
+  });
 };
 
-exports.createFlight = (req, res) => {
-  const user = req.body;
-
-  Flights.push({ ...user, id: uuid() });
-
-  console.log(
-    `Flight details: [${user.title}, ${user.time}, ${user.price}, ${user.date}] added to the database.`
-  );
-  res.send(
-    `Flight details: [${user.title}, ${user.time}, ${user.price}, ${user.date}] added to the database.`
-  );
+// add todo
+const addTodo = (req, res) => {
+  const { title, description } = req.body;
+  let newTodo = new TodoSchema({
+    title,
+    description,
+  });
+  try {
+    newTodo.save().then((data) => {
+      res.send({
+        message: 'Saved to database successfully',
+        data,
+      });
+    });
+  } catch (error) {
+    res.send(error);
+  }
 };
 
-exports.getFlight = (req, res) => {
-  const { id } = req.params;
+// Edit Todo List
+const editTodo = (req, res) => {
+  const { id, title, description } = req.query;
 
-  const foundFlight = Flights.find((user) => user.id === id);
-
-  res.send(foundFlight);
+  TodoSchema.findByIdAndUpdate(id, {
+    title,
+    description,
+    timestamp: new Date().toLocaleString(),
+  })
+    .then((data) => {
+      res.send({ message: 'record updated successfully', data });
+    })
+    .catch((err) => res.send(err));
 };
 
-exports.deleteFlight = (req, res) => {
-  const { id } = req.params;
-
-  user = Flights.find((user) => user.id !== id);
-  Flights.splice(Flights.indexOf(user), 1);
-
-  res.send(`Flight with id ${id} has been deleted from the database.`);
-  console.log(`Flight with id ${id} has been deleted from the database.`);
+// delete todo
+const deleteTodo = (req, res) => {
+  const { id } = req.query;
+  TodoSchema.findByIdAndDelete(id)
+    .then((data) => res.send({ message: 'record deleted successfully', data }))
+    .catch((err) => res.send(err));
 };
 
-exports.updateFlight = (req, res) => {
-  const user = Flights.find((user) => user.id === req.params.id);
-
-  user.title = req.body.title;
-  user.time = req.body.time;
-  user.price = req.body.price;
-  user.date = req.body.date;
-
-  res.send(
-    `Flight title has been updated to ${req.body.title}. time has been updated to ${req.body.time}. price has been updated to ${req.body.price}. date has been updated to ${req.body.date} `
-  );
+module.exports = {
+  getAllTodo,
+  addTodo,
+  editTodo,
+  deleteTodo,
 };
